@@ -3,97 +3,167 @@ import { DateRange } from "react-date-range";
 // Require Esperanto locale
 import { es } from "date-fns/locale";
 import Swal from "sweetalert2";
-import { useFormik } from "formik";
 import axios from "axios";
-import * as Yup from "yup";
+import { useForm } from "../../hooks/useForm";
+import useAuth from "../../hooks/useAuth";
+import { validToken } from "../../utils/validToken";
+import { Form, Row, Button, Modal, Spinner } from "react-bootstrap";
 
-import { Form, Row, Col, Button, Modal,FormControl, FloatingLabel, Alert, Spinner, } from "react-bootstrap";
 const ButtonTop = () => {
-  const [show, setShow] = useState(false);
-
-  const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
-  const [state, setState] = useState([
+  const calendarInitial = [
     {
       startDate: new Date(),
-      endDate: null,
+      endDate: new Date(),
       key: "selection",
     },
-  ]);
+  ];
 
-  const validationSchema = (values) => {
-    const errors = {};
-    console.log(values);
-    if (!values.outFormat) {
-      errors.outFormat = "Required";
-    } else if (values.firstName.length > 15) {
-      errors.outFormat = "Must be 15 characters or less";
-    }
+  const { auth, logout } = useAuth();
 
-    if (!values.lastName) {
-      errors.lastName = "Required";
-    } else if (values.lastName.length > 20) {
-      errors.lastName = "Must be 20 characters or less";
-    }
+  const [show, setShow] = useState(false);
 
-    if (!values.email) {
-      errors.email = "Required";
-    } else if (
-      !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(values.email)
-    ) {
-      errors.email = "Invalid email address";
-    }
+  const [calendar, setCalendar] = useState(calendarInitial);
 
-    return errors;
+  const [loading, setLoading] = useState(false);
+
+  const [formValues, handleInputChange, reset] = useForm({
+    typeFile: "00",
+    outFormat: 0,
+  });
+
+  const { typeFile, outFormat } = formValues;
+
+  const [fileCsv, setFileCsv] = useState({selectedFile: null});
+
+  const handleClose = () => setShow(false);
+
+  const handleShow = () => {
+    reset;
+    setCalendar(calendarInitial);
+    setShow(true);
+    setFileCsv({selectedFile: null});
   };
 
-  const initialValues = () => {
-    return {
-      email: "",
-      password: "",
-    };
+
+  const handleFileCsv = event => {
+    setFileCsv({selectedFile: event.target.files[0]});
+    console.log('change')
   };
 
-  const formik = useFormik({
-    initialValues,
-    validationSchema,
-    onSubmit: async (values) => {
-      setLoading(true);
-      /*  try {
-        const resultPetition = await axios.post(
-          "http://localhost:8080/api/auth/login",
-          JSON.stringify(values),
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (calendar[0].startDate === null) {
+      return Swal.fire(
+        "Notificación",
+        "La fecha de inicio es obligatoria",
+        "error"
+      );
+    }
+
+    if (calendar[0].endDate === null) {
+      return Swal.fire(
+        "Notificación",
+        "La fecha de fin es obligatoria",
+        "error"
+      );
+    }
+
+    const dateBegin = new Date(calendar[0].startDate);
+    const dateEnd = new Date(calendar[0].endDate);
+
+    if (dateBegin.toISOString().slice(0, 10) === dateEnd.toISOString().slice(0, 10)) {
+      return Swal.fire(
+        "Notificación",
+        "Las fechas no pueden ser iguales",
+        "error"
+      );
+    }
+
+    if (dateBegin.getFullYear() !== dateEnd.getFullYear()) {
+      return Swal.fire(
+        "Notificación",
+        "Las fechas no se encuentran en el mismo rango",
+        "error"
+      );
+    }
+
+    if (outFormat === 0) {
+      return Swal.fire(
+        "Notificación",
+        "El formato de salida es obligatorio",
+        "error"
+      );
+    }
+
+    if (typeFile === "00") {
+      return Swal.fire(
+        "Notificación",
+        "El tipo de documento es obligatorio",
+        "error"
+      );
+    }
+
+    if (fileCsv.selectedFile === null) {
+      return Swal.fire("Notificación", "El secuencial es obligarorio", "error");
+    }
+
+    const fileSplit = fileCsv.selectedFile.name.split(".");
+    const extFile = fileSplit[fileSplit.length - 1];
+    if (extFile !== 'csv') {
+      setFileCsv({selectedFile: null});
+      return Swal.fire(
+        "Notificación",
+        "El archivo no corresponde a un formato (*.csv)",
+        "error"
+      );
+    }
+    const tokenValid = validToken(logout);
+    setLoading(true);
+    if (tokenValid) {
+      const data = new FormData()
+      data.append('date_begin',dateBegin.toISOString().slice(0, 10));
+      data.append('date_end',dateEnd.toISOString().slice(0, 10));
+      data.append('output_format',outFormat);
+        data.append('document_type',typeFile);
+        data.append('user', auth.idUser);
+        data.append('secuential',fileCsv.selectedFile);
+
+      try {
+        const response = await axios.post(
+          "http://localhost:8080/api/planing",
+          data,
           {
             headers: {
               "Content-Type": "application/json; charset=utf-8",
               "Access-Control-Allow-Origin": "*",
+              "x-token": tokenValid,
             },
           }
         );
-        if (resultPetition.status === 200) {
+        if (response.status === 200) {
           Swal.fire({
-            position: 'top-end',
-            icon: 'success',
-            title: 'Correcto',
+            position: "top-end",
+            icon: "success",
+            title: "Correcto",
             showConfirmButton: false,
-            timer: 1500
-          })
-          login(resultPetition.data.token);
+            timer: 1500,
+          });
           setTimeout(() => {
-           router.push("/list-planing");
+            handleClose();
           }, 1500);
         }
         setLoading(false);
       } catch (error) {
+        console.log(error);
         setLoading(false);
         Swal.fire(
           "Notificación",
-          "El usuario o la contraseña no son correctos",
+          "Problemas en los datos del formulario",
           "error"
         );
-      } */
-    },
-  });
+      }
+    }
+  };
 
   return (
     <>
@@ -123,7 +193,7 @@ const ButtonTop = () => {
         keyboard={false}
         size="lg"
       >
-        <Form onSubmit={formik.handleSubmit}>
+        <Form onSubmit={handleSubmit}>
           <Modal.Header>
             <Modal.Title>Adicionar programación</Modal.Title>
           </Modal.Header>
@@ -133,72 +203,54 @@ const ButtonTop = () => {
                 <DateRange
                   editableDateInputs={true}
                   onChange={(item) => {
-                    setState([item.selection]);
-                    console.log(state);
+                    setCalendar([item.selection]);
                   }}
                   moveRangeOnFirstSelection={false}
-                  ranges={state}
+                  ranges={calendar}
                   locale={es}
-                  /*    dateDisplayFormat={'yyyy-MM-LL'} */
                 />
               </div>
               <div className="col-6">
-              <Row className="mb-3">
-    <Form.Group as={Col} controlId="formGridCity">
-      <Form.Label>City</Form.Label>
-      <Form.Control />
-    </Form.Group>
-
-
-
-    <Form.Group as={Col} controlId="formGridZip">
-      <Form.Label>Zip</Form.Label>
-      <Form.Control />
-    </Form.Group>
-  </Row>
                 <div className="row">
-
                   <div className="mb-3 mt-2">
-
-
-                  {/*   <select
+                    <select
                       className="form-select"
                       name="outFormat"
-                      value={formik.values.outFormat}
-                      onChange={formik.handleChange}
-                      defaultValue={0}
+                      value={outFormat}
+                      onChange={handleInputChange}
                     >
-                      <option selected value={0}>
-                        Formato de salida (XML ó PDF)
-                      </option>
+                      <option value={0}>Formato de salida (XML ó PDF)</option>
                       <option value={1}>XML</option>
                       <option value={2}>PDF</option>
-                    </select> */}
-                    {formik.errors.outFormat && touched.color && (
-                      <div className="alert alert-danger" role="alert">
-                        {errors.outFormat}
-                      </div>
-                    )}
+                    </select>
                   </div>
                   <div className="mb-3">
-                  {/*   <select
+                    <select
                       className="form-select"
-                      aria-label="Default select example"
+                      name="typeFile"
+                      value={typeFile}
+                      onChange={handleInputChange}
                     >
-                      <option selected>Tipo de documento</option>
+                      <option value={"00"}>Tipo de documento</option>
                       <option value={"01"}>Factura</option>
                       <option value={"03"}>Liquidación de Compras</option>
                       <option value={"04"}>Nota de Crédito</option>
                       <option value={"05"}>Nota Débito</option>
                       <option value={"06"}>Guía de Remisión</option>
                       <option value={"07"}>Comprobante de Retención</option>
-                    </select> */}
+                    </select>
                   </div>
                   <div className="mb-3">
                     <label htmlFor="formFile" className="form-label">
                       Secuencial (*.csv)
                     </label>
-                    <input className="form-control" type="file" id="formFile" />
+                    <input
+                      className="form-control"
+                      type="file"
+                      id="formFile"
+                      name="fileCsv"
+                      onChange={handleFileCsv}
+                    />
                   </div>
                 </div>
               </div>
@@ -208,7 +260,18 @@ const ButtonTop = () => {
             <Button variant="primary" onClick={handleClose}>
               Cancelar
             </Button>
-            <Button variant="dark">Programar ahora</Button>
+            <Button type="submit" variant="dark">
+              {loading ? (
+                <Spinner
+                  as="span"
+                  animation="border"
+                  size="sm"
+                  role="status"
+                  aria-hidden="true"
+                />
+              ) : null}
+              <span> Programar ahora</span>
+            </Button>
           </Modal.Footer>
         </Form>
       </Modal>

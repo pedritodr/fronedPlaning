@@ -8,6 +8,8 @@ import axios from "axios";
 
 import useAuth from "../../hooks/useAuth";
 
+const [loading, setLoading] = useState(false);
+
 const validationSchema = () => {
   return Yup.object({
     email: Yup.string()
@@ -69,7 +71,7 @@ export default function SignupForm() {
     },
   });
 
-  const [loading, setLoading] = useState(false);
+
 
   return (
     <>
