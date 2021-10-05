@@ -8,7 +8,7 @@ import axios from "axios";
 
 import useAuth from "../../hooks/useAuth";
 
-const [loading, setLoading] = useState(false);
+
 
 const validationSchema = () => {
   return Yup.object({
@@ -27,14 +27,15 @@ const initialValues = () => {
 };
 
 export default function SignupForm() {
+
   const router = useRouter();
   const { login } = useAuth();
-
+  const [loadingUser, setLoadingUser] = useState(false);
   const formik = useFormik({
     initialValues,
     validationSchema,
     onSubmit: async (values) => {
-      setLoading(true);
+      setLoadingUser(true);
       try {
         const resultPetition = await axios.post(
           "http://localhost:8080/api/auth/login",
@@ -59,9 +60,9 @@ export default function SignupForm() {
            router.push("/list-planing");
           }, 1500);
         }
-        setLoading(false);
+        setLoadingUser(false);
       } catch (error) {
-        setLoading(false);
+        setLoadingUser(false);
         Swal.fire(
           "Notificación",
           "El usuario o la contraseña no son correctos",
@@ -111,7 +112,7 @@ export default function SignupForm() {
                     </div>
                     <div className="mb-3 text-end">
                       <button type="submit" className="btn btn-dark">
-                        {loading ? (
+                        {loadingUser ? (
                           <Spinner
                             as="span"
                             animation="border"
