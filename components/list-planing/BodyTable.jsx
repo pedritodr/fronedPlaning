@@ -1,41 +1,83 @@
-import { Table, ButtonGroup,DropdownButton,Dropdown } from "react-bootstrap";
+import { useEffect } from "react";
+import { useTable, usePagination } from "react-table";
+import { Table } from "react-bootstrap";
+import { MdNavigateNext, MdNavigateBefore } from "react-icons/md";
 
-const BodyTable = () => {
+const BodyTable = ({
+  data,
+  fetchData,
+  columns,
+  pageCount: controlledPageCount,
+} = props) => {
+  const tableInstance = useTable(
+    {
+      columns,
+      data,
+      initialState: { pageIndex: 0 },
+      manualPagination: true,
+      pageCount: controlledPageCount,
+    },
+    usePagination
+  );
+
+  const {
+    canPreviousPage,
+    canNextPage,
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    rows,
+    prepareRow,
+    nextPage,
+    previousPage,
+    state: { pageIndex },
+  } = tableInstance;
+  useEffect(() => {
+    fetchData(pageIndex);
+  }, [pageIndex, fetchData]);
+
   return (
-    <>
-      <Table striped bordered hover>
+    <div>
+      <Table striped bordered hover {...getTableProps()}>
         <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Fecha de planificación</th>
-            <th>Fecha terminado proceso</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
+          {headerGroups.map((headerGroup) => (
+            <tr {...headerGroup.getHeaderGroupProps()}>
+              {headerGroup.headers.map((column) => (
+                <th {...column.getHeaderProps()}>{column.render("Header")}</th>
+              ))}
+            </tr>
+          ))}
         </thead>
-        <tbody>
-          <tr>
-            <td>61522789ea3cbecec13b859c</td>
-            <td>2021/09/17</td>
-            <td>Sin definir</td>
-            <td>Por iniciar</td>
-            <td>
-              <ButtonGroup>
-                <DropdownButton
-                  as={ButtonGroup}
-                  title="Acciones"
-                  id="bg-nested-dropdown"
-                  variant="outline-dark"
-                >
-                  <Dropdown.Item eventKey="1">Eliminar</Dropdown.Item>
-                  <Dropdown.Item eventKey="2">Logs</Dropdown.Item>
-                </DropdownButton>
-              </ButtonGroup>
-            </td>
-          </tr>
+        <tbody {...getTableBodyProps()}>
+          {rows.map((row) => {
+            prepareRow(row);
+            return (
+              <tr {...row.getRowProps()}>
+                {row.cells.map((cell) => {
+                  return (
+                    <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
+                  );
+                })}
+              </tr>
+            );
+          })}
         </tbody>
       </Table>
-    </>
+      <nav aria-label="Page navigation example">
+        <ul className="pagination justify-content-center">
+          <li className="page-item">
+            <a className="page-link" onClick={() => previousPage()} disabled={!canPreviousPage}>
+            <MdNavigateBefore/>
+            </a>
+          </li>
+          <li className="page-item">
+            <a className="page-link" onClick={() => nextPage()} disabled={!canNextPage}>
+            <MdNavigateNext/>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
   );
 };
 
