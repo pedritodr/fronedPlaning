@@ -22,13 +22,28 @@ const listPlaning = () => {
   const [planings, setPlanings] = useState([]);
   const [pageCount, setPageCount] = useState(0);
 
+  const month = [
+    "Enero",
+    "Febrero",
+    "Marzo",
+    "Abril",
+    "Mayo",
+    "Junio",
+    "Julio",
+    "Agosto",
+    "Septiembre",
+    "Octubre",
+    "Noviembre",
+    "Diciembre",
+  ];
+
   const fetchData = useCallback(async function (page) {
     setLoading(true);
     const tokenValid = validToken(logout);
     if (tokenValid) {
       try {
         const response = await axios.get(
-          `http://localhost:8080/api/planing/${page + 1}`,
+          `http://localhost:8080/api/planing/paginate/${page + 1}`,
           {
             headers: {
               "Content-Type": "application/json; charset=utf-8",
@@ -68,23 +83,30 @@ const listPlaning = () => {
           } else {
             typeDocument = "";
           }
-          return dateCreate.toISOString().slice(0, 10) + "-" + typeDocument;
+          return `${
+            month[dateCreate.getMonth()]
+          }/${dateCreate.getFullYear()} - ${typeDocument}`;
         },
       },
       {
         Header: "Fecha de planificación",
-        accessor: "date_begin",
+        accessor: "date_create",
         Cell: (props) => {
-          const dateBegin = new Date(props.row.values.date_begin);
-          return dateBegin.toISOString().slice(0, 10);
+          const dateCreatePlaning = new Date(props.row.values.date_create);
+          return dateCreatePlaning.toISOString().slice(0, 10);
         },
       },
       {
         Header: "Fecha terminado proceso",
-        accessor: "date_end",
-        Cell: (props) => {
-          const dateEnd = new Date(props.row.values.date_end);
-          return dateEnd.toISOString().slice(0, 10);
+        accessor: (properties) => {
+          if (properties.date_culminated !== undefined) {
+            const dateCulminated = new Date(properties.date_culminated);
+            return `${dateCulminated
+              .toISOString()
+              .slice(0, 10)} ${dateCulminated.toLocaleTimeString()}`;
+          } else {
+            return null;
+          }
         },
       },
       {
@@ -102,8 +124,7 @@ const listPlaning = () => {
       },
       {
         Header: "Actions",
-        accessor: "actions",
-        Cell: (props) => {
+        accessor: (properties) => {
           return (
             <ButtonGroup>
               <DropdownButton
@@ -112,16 +133,22 @@ const listPlaning = () => {
                 id="bg-nested-dropdown"
                 variant="outline-dark"
               >
+                {properties.status === 0 && (
+                  <Dropdown.Item
+                    onClick={() => handleDeletePlaning(properties)}
+                    eventKey="1"
+                  >
+                    Eliminar{" "}
+                  </Dropdown.Item>
+                )}
                 <Dropdown.Item
-                  onClick={() => handleDeletePlaning(props.row)}
-                  eventKey="1"
+                  onClick={() => handleLogPlaning(properties)}
+                  eventKey="2"
                 >
-                  Eliminar
-                </Dropdown.Item>
-                <Dropdown.Item
-                 onClick={() => handleLogPlaning(props.row)}
-                 eventKey="2">Logs</Dropdown.Item>
-              </DropdownButton>
+                  {" "}
+                  Logs{" "}
+                </Dropdown.Item>{" "}
+              </DropdownButton>{" "}
             </ButtonGroup>
           );
         },
@@ -144,55 +171,81 @@ const listPlaning = () => {
       cancelButtonColor: "#d33",
       confirmButtonText: "¡Sí!",
       allowOutsideClick: false,
-    }).then(async(result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
         const tokenValid = validToken(logout);
         if (tokenValid) {
-          const planingObject = planingsRef.current[rowIndex.id];
-
           try {
-            const response = await axios.delete(
-              `http://localhost:8080/api/planing/${planingObject._id}`,
+            const responsePlaning = await axios.get(
+              `http://localhost:8080/api/planing/${rowIndex._id}`,
               {
                 headers: {
                   "Content-Type": "application/json; charset=utf-8",
                   "Access-Control-Allow-Origin": "*",
-                  'x-token':tokenValid
+                  "x-token": tokenValid,
                 },
               }
             );
-            if(response.status ===200){
-              let newPlanings = [...planingsRef.current];
-              newPlanings.splice(rowIndex.id, 1);
-              setPlanings(newPlanings);
-              Swal.fire(
-                "¡Eliminada!",
-                "Planificación eliminado correctamente",
-                "success"
-              );
+            if (responsePlaning.status === 200) {
+              if (responsePlaning.data.status === 0) {
+                const response = await axios.delete(
+                  `http://localhost:8080/api/planing/${rowIndex._id}`,
+                  {
+                    headers: {
+                      "Content-Type": "application/json; charset=utf-8",
+                      "Access-Control-Allow-Origin": "*",
+                      "x-token": tokenValid,
+                    },
+                  }
+                );
+                if (response.status === 200) {
+                  const newPlanings  = planingsRef.current.filter(element=>element._id !== rowIndex._id && element);
+                  setPlanings(newPlanings);
+                  Swal.fire(
+                    "¡Eliminada!",
+                    "Planificación eliminado correctamente",
+                    "success"
+                  );
+                }
+              } else {
+                const newPlanings  = planingsRef.current.map(element=>{
+                  if(element._id === rowIndex._id){
+                    element.status = 1;
+                  }
+                  return element;
+                });
+                setPlanings(newPlanings);
+                Swal.fire(
+                  "¡Notificación!",
+                  "La planificación seleccionada se encuentra en proceso",
+                  "info"
+                );
+              }
             }
           } catch (error) {
-            console.log(error)
+            console.log(error);
           }
         }
       }
     });
   };
 
-  const handleLogPlaning = (rowIndex)=>{
-    Swal.fire(
-      "¡Información!",
-      "Coming soon",
-      "success"
-    );
-  }
+  const handleLogPlaning = (rowIndex) => {
+    Swal.fire("¡Información!", "Coming soon", "success");
+  };
+
+  const handleInsert = (valueInsert) => {
+    valueInsert.id = planingsRef.current.length;
+    const dataNew = [...planingsRef.current, valueInsert];
+    setPlanings(dataNew);
+  };
 
   return (
     <Layout>
       <div className="container-fluid">
         <div className="row">
           <div className="col-12">
-            <ButtonTop />
+            <ButtonTop insert={handleInsert} />
           </div>
         </div>
         <div className="row mt-3">
@@ -203,7 +256,7 @@ const listPlaning = () => {
               fetchData={fetchData}
               pageCount={pageCount}
             />
-            {isLoading && <div>Cargando...</div>}
+            {isLoading && <div> Cargando... </div>}
           </div>
         </div>
       </div>

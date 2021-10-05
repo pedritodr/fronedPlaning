@@ -9,7 +9,7 @@ import useAuth from "../../hooks/useAuth";
 import { validToken } from "../../utils/validToken";
 import { Form, Row, Button, Modal, Spinner } from "react-bootstrap";
 
-const ButtonTop = () => {
+const ButtonTop = (props) => {
   const calendarInitial = [
     {
       startDate: new Date(),
@@ -141,6 +141,7 @@ const ButtonTop = () => {
           }
         );
         if (response.status === 200) {
+          props.insert(response.data.planing)
           Swal.fire({
             position: "top-end",
             icon: "success",
