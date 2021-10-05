@@ -8,8 +8,6 @@ import axios from "axios";
 
 import useAuth from "../../hooks/useAuth";
 
-
-
 const validationSchema = () => {
   return Yup.object({
     email: Yup.string()
