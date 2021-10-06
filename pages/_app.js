@@ -15,7 +15,7 @@ function MyApp({ Component, pageProps }) {
   const [auth, setAuth] = useState(undefined);
   const [realoadUser, setReloadUser] = useState(false);
   const router = useRouter();
-
+//console.log(process.env.NEXT_PUBLIC_END_POINT)
   useEffect(() => {
     const token = getToken();
     if (token) {

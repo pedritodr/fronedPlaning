@@ -1,6 +1,6 @@
 import { getToken, hasExpiredToken } from '../pages/api/token';
 
-export function validToken(logout) {
+export const validToken = (logout) => {
     const token = getToken();
     if (token === null) {
         logout();

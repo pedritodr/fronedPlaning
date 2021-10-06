@@ -43,7 +43,7 @@ const listPlaning = () => {
     if (tokenValid) {
       try {
         const response = await axios.get(
-          `http://localhost:8080/api/planing/paginate/${page + 1}`,
+          `${process.env.NEXT_PUBLIC_END_POINT}planing/paginate/${page + 1}`,
           {
             headers: {
               "Content-Type": "application/json; charset=utf-8",
@@ -177,7 +177,7 @@ const listPlaning = () => {
         if (tokenValid) {
           try {
             const responsePlaning = await axios.get(
-              `http://localhost:8080/api/planing/${rowIndex._id}`,
+              `${process.env.NEXT_PUBLIC_END_POINT}planing/${rowIndex._id}`,
               {
                 headers: {
                   "Content-Type": "application/json; charset=utf-8",
@@ -189,7 +189,7 @@ const listPlaning = () => {
             if (responsePlaning.status === 200) {
               if (responsePlaning.data.status === 0) {
                 const response = await axios.delete(
-                  `http://localhost:8080/api/planing/${rowIndex._id}`,
+                  `${process.env.NEXT_PUBLIC_END_POINT}planing/${rowIndex._id}`,
                   {
                     headers: {
                       "Content-Type": "application/json; charset=utf-8",
@@ -199,7 +199,9 @@ const listPlaning = () => {
                   }
                 );
                 if (response.status === 200) {
-                  const newPlanings  = planingsRef.current.filter(element=>element._id !== rowIndex._id && element);
+                  const newPlanings = planingsRef.current.filter(
+                    (element) => element._id !== rowIndex._id && element
+                  );
                   setPlanings(newPlanings);
                   Swal.fire(
                     "¡Eliminada!",
@@ -208,8 +210,8 @@ const listPlaning = () => {
                   );
                 }
               } else {
-                const newPlanings  = planingsRef.current.map(element=>{
-                  if(element._id === rowIndex._id){
+                const newPlanings = planingsRef.current.map((element) => {
+                  if (element._id === rowIndex._id) {
                     element.status = 1;
                   }
                   return element;
@@ -230,8 +232,43 @@ const listPlaning = () => {
     });
   };
 
-  const handleLogPlaning = (rowIndex) => {
-    Swal.fire("¡Información!", "Coming soon", "success");
+  const handleLogPlaning = async (rowIndex) => {
+    const tokenValid = validToken(logout);
+    if (tokenValid) {
+      try {
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_END_POINT}planing/download/${rowIndex._id}`,
+          {
+            headers: {
+              "Content-Type": "application/json; charset=utf-8",
+              "Access-Control-Allow-Origin": "*",
+              responseType: "blob",
+              "x-token": tokenValid,
+            },
+            onDownloadProgress: (progressEvent) => {
+              let percentCompleted = Math.round((progressEvent.loaded * 100) /  progressEvent.total);
+              console.log(percentCompleted)
+           },
+          },
+        );
+        if (response.status === 200) {
+          const url = window.URL.createObjectURL(new Blob([response.data]));
+          const link = document.createElement("a");
+          link.href = url;
+          link.setAttribute("download", `planing-${rowIndex._id}`);
+          document.body.appendChild(link);
+          link.click();
+          Swal.fire("¡Información!", "Descarga completa", "success");
+        }
+      } catch (error) {
+        console.log(error);
+        Swal.fire(
+          "¡Información!",
+          "No hay logs asociado a esta planificación",
+          "info"
+        );
+      }
+    }
   };
 
   const handleInsert = (valueInsert) => {

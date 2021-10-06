@@ -130,7 +130,7 @@ const ButtonTop = (props) => {
 
       try {
         const response = await axios.post(
-          "http://localhost:8080/api/planing",
+          `${process.env.NEXT_PUBLIC_END_POINT}planing`,
           data,
           {
             headers: {
@@ -166,6 +166,44 @@ const ButtonTop = (props) => {
     }
   };
 
+  const handleDownloadTemplate =async ()=>{
+    const tokenValid = validToken(logout);
+    if (tokenValid) {
+      try {
+        const response = await axios.get(
+          '/api/getFile',
+          {
+            headers: {
+              "Content-Type": "application/json; charset=utf-8",
+              "Access-Control-Allow-Origin": "*",
+              responseType: "blob",
+            },
+            onDownloadProgress: (progressEvent) => {
+              let percentCompleted = Math.round((progressEvent.loaded * 100) /  progressEvent.total);
+              console.log(percentCompleted)
+           },
+          },
+        );
+        if (response.status === 200) {
+          const url = window.URL.createObjectURL(new Blob([response.data]));
+          const link = document.createElement("a");
+          link.href = url;
+          link.setAttribute("download", 'template.csv');
+          document.body.appendChild(link);
+          link.click();
+          Swal.fire("¡Información!", "Descarga completa", "success");
+        }
+      } catch (error) {
+        console.log(error);
+        Swal.fire(
+          "¡Información!",
+          "No hay logs asociado a esta planificación",
+          "info"
+        );
+      }
+    }
+  }
+
   return (
     <>
       <div className="row mt-3">
@@ -174,13 +212,14 @@ const ButtonTop = (props) => {
             <button
               className="btn btn-outline-primary btn-lg me-md-2"
               type="button"
+              onClick={()=>handleDownloadTemplate()}
             >
               Descargar plantilla
             </button>
             <button
               className="btn btn-outline-info btn-lg"
               type="button"
-              onClick={handleShow}
+              onClick={()=>handleShow}
             >
               Crear planificación
             </button>
