@@ -43,7 +43,7 @@ const BodyTable = ({
             {headerGroups.map((headerGroup,i) => (
               <tr key={i} {...headerGroup.getHeaderGroupProps()}>
                 {headerGroup.headers.map((column) => (
-                  <th {...column.getHeaderProps()}>
+                  <th key={i} {...column.getHeaderProps()}>
                     {column.render("Header")}
                   </th>
                 ))}
@@ -57,7 +57,7 @@ const BodyTable = ({
                 <tr key={i} {...row.getRowProps()}>
                   {row.cells.map((cell) => {
                     return (
-                      <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
+                      <td key={i} {...cell.getCellProps()}>{cell.render("Cell")}</td>
                     );
                   })}
                 </tr>
