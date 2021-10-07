@@ -30,7 +30,7 @@ const NavbarMain = () => {
   return (
     <Navbar style={{ borderBottom: "1px solid !important" }}>
       <Container fluid>
-        <Navbar.Brand>
+        <Navbar.Brand >
           Lista de programaciones de descargar
         </Navbar.Brand>
         <Navbar.Toggle />
@@ -46,6 +46,7 @@ const NavbarMain = () => {
         </Navbar.Collapse>
       </Container>
     </Navbar>
+
   );
 };
 

@@ -1,5 +1,4 @@
 import { useCallback, useMemo, useState, useRef } from "react";
-import { Column } from "react-table";
 import { ButtonGroup, DropdownButton, Dropdown } from "react-bootstrap";
 import { useRouter } from "next/router";
 import BodyTable from "../components/list-planing/BodyTable";

@@ -47,7 +47,6 @@ const ButtonTop = (props) => {
 
   const handleFileCsv = event => {
     setFileCsv({selectedFile: event.target.files[0]});
-    console.log('change')
   };
 
   const handleSubmit = async (e) => {
@@ -219,7 +218,7 @@ const ButtonTop = (props) => {
             <button
               className="btn btn-outline-info btn-lg"
               type="button"
-              onClick={()=>handleShow}
+              onClick={()=>handleShow()}
             >
               Crear planificación
             </button>
