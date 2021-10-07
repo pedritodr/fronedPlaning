@@ -13,7 +13,7 @@ function MyApp({ Component, pageProps }) {
   const [auth, setAuth] = useState(undefined);
   const [realoadUser, setReloadUser] = useState(false);
   const router = useRouter();
-
+  if (auth === undefined) return null;
   const login = (token) => {
     setToken(token);
     setAuth({
@@ -56,7 +56,7 @@ function MyApp({ Component, pageProps }) {
     [auth]
   );
 
-  if (auth === undefined) return null;
+
   return (
   <AuthContext.Provider value={authData}>
     <Component {...pageProps} />
