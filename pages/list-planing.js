@@ -9,7 +9,7 @@ import { validToken } from "../utils/validToken";
 import axios from "axios";
 import Swal from "sweetalert2";
 
-const listPlaning = () => {
+const ListPlaning = () => {
   const { auth, logout } = useAuth();
   const router = useRouter();
   if (auth === null) {
@@ -300,4 +300,4 @@ const listPlaning = () => {
   );
 };
 
-export default listPlaning;
+export default ListPlaning;
