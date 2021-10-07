@@ -27,8 +27,6 @@ function MyApp({ Component, pageProps }) {
       removeToken();
       setAuth(null);
       router.push("/");
-    }else{
-      router.push("/");
     }
   };
 
@@ -56,7 +54,7 @@ function MyApp({ Component, pageProps }) {
     [auth]
   );
 
-
+  if (auth === undefined) return null;
   return (
   <AuthContext.Provider value={authData}>
     <Component {...pageProps} />
