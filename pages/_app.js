@@ -14,18 +14,8 @@ function MyApp({ Component, pageProps }) {
   const [realoadUser, setReloadUser] = useState(false);
   const router = useRouter();
   if (auth === undefined) return null;
-  useEffect(() => {
-    const token = getToken();
-    if (token) {
-      setAuth({
-        token,
-        idUser: jwtDecode(token).uid,
-      });
-    } else {
-      setAuth(null);
-    }
-    setReloadUser(false);
-  }, [realoadUser]);
+
+
 
   const login = (token) => {
     setToken(token);
@@ -54,6 +44,19 @@ function MyApp({ Component, pageProps }) {
     }),
     [auth]
   );
+
+  useEffect(() => {
+    const token = getToken();
+    if (token) {
+      setAuth({
+        token,
+        idUser: jwtDecode(token).uid,
+      });
+    } else {
+      setAuth(null);
+    }
+    setReloadUser(false);
+  }, [realoadUser]);
 
   return (
   <AuthContext.Provider value={authData}>
