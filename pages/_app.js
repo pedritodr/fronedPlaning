@@ -13,9 +13,6 @@ function MyApp({ Component, pageProps }) {
   const [auth, setAuth] = useState(undefined);
   const [realoadUser, setReloadUser] = useState(false);
   const router = useRouter();
-  if (auth === undefined) return null;
-
-
 
   const login = (token) => {
     setToken(token);
@@ -35,15 +32,6 @@ function MyApp({ Component, pageProps }) {
     }
   };
 
-  const authData = useMemo(
-    () => ({
-      auth,
-      login,
-      logout,
-      setReloadUser
-    }),
-    [auth]
-  );
 
   useEffect(() => {
     const token = getToken();
@@ -58,6 +46,17 @@ function MyApp({ Component, pageProps }) {
     setReloadUser(false);
   }, [realoadUser]);
 
+  const authData = useMemo(
+    () => ({
+      auth,
+      login,
+      logout,
+      setReloadUser
+    }),
+    [auth]
+  );
+
+  if (auth === undefined) return null;
   return (
   <AuthContext.Provider value={authData}>
     <Component {...pageProps} />
