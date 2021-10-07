@@ -25,7 +25,7 @@ const NavbarMain = () => {
       setUser(response.data.user);
     }
   })()
-  }, [auth]);
+  }, [auth,logout]);
 
   return (
     <Navbar style={{ borderBottom: "1px solid !important" }}>
