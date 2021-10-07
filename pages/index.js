@@ -11,7 +11,7 @@ export default function Home() {
     if(auth){
      router.replace('/list-planing')
     }
-  }, [auth])
+  }, [auth,router])
 
   return (
     <>
