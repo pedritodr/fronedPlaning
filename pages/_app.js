@@ -14,6 +14,19 @@ function MyApp({ Component, pageProps }) {
   const [realoadUser, setReloadUser] = useState(false);
   const router = useRouter();
 
+  useEffect(() => {
+    const token = getToken();
+    if (token) {
+      setAuth({
+        token,
+        idUser: jwtDecode(token).uid,
+      });
+    } else {
+      setAuth(null);
+    }
+    setReloadUser(false);
+  }, [realoadUser]);
+
   const login = (token) => {
     setToken(token);
     setAuth({
@@ -31,25 +44,12 @@ function MyApp({ Component, pageProps }) {
   };
 
 
-  useEffect(() => {
-    const token = getToken();
-    if (token) {
-      setAuth({
-        token,
-        idUser: jwtDecode(token).uid,
-      });
-    } else {
-      setAuth(null);
-    }
-    setReloadUser(false);
-  }, [realoadUser]);
-
   const authData = useMemo(
     () => ({
       auth,
       login,
       logout,
-      reloadUser
+      setReloadUser
     }),
     [auth]
   );
