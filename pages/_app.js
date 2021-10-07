@@ -8,14 +8,12 @@ import 'react-date-range/dist/styles.css'; // main style file
 import 'react-date-range/dist/theme/default.css'; // theme css file
 import { setToken , getToken,removeToken} from './api/token';
 
-
-
 function MyApp({ Component, pageProps }) {
 
   const [auth, setAuth] = useState(undefined);
   const [realoadUser, setReloadUser] = useState(false);
   const router = useRouter();
-//console.log(process.env.NEXT_PUBLIC_END_POINT)
+
   useEffect(() => {
     const token = getToken();
     if (token) {
@@ -36,6 +34,7 @@ function MyApp({ Component, pageProps }) {
       idUser: jwtDecode(token).uid,
     });
   };
+
   const logout = () => {
     if (auth) {
       removeToken();
@@ -45,7 +44,6 @@ function MyApp({ Component, pageProps }) {
       router.push("/");
     }
   };
-
 
   const authData = useMemo(
     () => ({
