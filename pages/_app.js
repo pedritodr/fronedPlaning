@@ -51,7 +51,7 @@ function MyApp({ Component, pageProps }) {
       logout,
       setReloadUser
     }),
-    [auth]
+    [auth,logout]
   );
 
   if (auth === undefined) return null;
