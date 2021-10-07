@@ -287,7 +287,7 @@ const ListPlaning = () => {
             <BodyTable
               columns={columns}
               data={planings}
-              fetchData={fetchData}
+              fetchData={()=>fetchData()}
               pageCount={pageCount}
             />
             {isLoading && <div> Cargando... </div>}
