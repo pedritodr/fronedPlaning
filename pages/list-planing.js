@@ -10,6 +10,17 @@ import axios from "axios";
 import Swal from "sweetalert2";
 
 const ListPlaning = () => {
+  const [isLoading, setLoading] = useState(false);
+  const [planings, setPlanings] = useState([]);
+  const [pageCount, setPageCount] = useState(0);
+
+  const { auth, logout } = useAuth();
+  const router = useRouter();
+  if (auth === null) {
+    router.replace("/");
+    return null;
+  }
+
   const month = [
     "Enero",
     "Febrero",
@@ -24,17 +35,8 @@ const ListPlaning = () => {
     "Noviembre",
     "Diciembre",
   ];
-  const { auth, logout } = useAuth();
-  const [isLoading, setLoading] = useState(false);
-  const [planings, setPlanings] = useState([]);
-  const [pageCount, setPageCount] = useState(0);
-  const router = useRouter();
-  if (auth === null) {
-    router.replace("/");
-    return null;
-  }
 
-  const fetchData = useCallback(async function (page) {
+  const fetchData = async function (page) {
     setLoading(true);
     const tokenValid = validToken(logout);
     if (tokenValid) {
@@ -56,11 +58,10 @@ const ListPlaning = () => {
         console.log(error);
       }
     }
-  }, []);
+  }
 
-  const columns = useMemo(
-    () => [
-      {
+  const columns =
+    [ {
         Header: "Nombre",
         accessor: (properties) => {
           const dateCreate = new Date(properties.date_create);
@@ -149,14 +150,7 @@ const ListPlaning = () => {
             </ButtonGroup>
           );
         },
-      },
-    ],
-    []
-  );
-
-  const planingsRef = useRef();
-
-  planingsRef.current = planings;
+      }];
 
   const handleDeletePlaning = (rowIndex) => {
     Swal.fire({
@@ -196,7 +190,7 @@ const ListPlaning = () => {
                   }
                 );
                 if (response.status === 200) {
-                  const newPlanings = planingsRef.current.filter(
+                  const newPlanings = planings.filter(
                     (element) => element._id !== rowIndex._id && element
                   );
                   setPlanings(newPlanings);
@@ -207,7 +201,7 @@ const ListPlaning = () => {
                   );
                 }
               } else {
-                const newPlanings = planingsRef.current.map((element) => {
+                const newPlanings = planings.map((element) => {
                   if (element._id === rowIndex._id) {
                     element.status = 1;
                   }
@@ -269,8 +263,8 @@ const ListPlaning = () => {
   };
 
   const handleInsert = (valueInsert) => {
-    valueInsert.id = planingsRef.current.length;
-    const dataNew = [...planingsRef.current, valueInsert];
+    valueInsert.id =planings.length;
+    const dataNew = [...planings, valueInsert];
     setPlanings(dataNew);
   };
 
@@ -287,7 +281,7 @@ const ListPlaning = () => {
             <BodyTable
               columns={columns}
               data={planings}
-              fetchData={()=>fetchData()}
+              fetchData={fetchData}
               pageCount={pageCount}
             />
             {isLoading && <div> Cargando... </div>}

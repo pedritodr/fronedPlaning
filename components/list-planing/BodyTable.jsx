@@ -32,18 +32,20 @@ const BodyTable = ({
     previousPage,
     state: { pageIndex },
   } = tableInstance;
+
   useEffect(() => {
     fetchData(pageIndex);
-  }, [pageIndex, fetchData]);
+  }, [pageIndex]);
+
   return (
     <div>
       {rows.length > 0 ? (
         <Table striped bordered hover {...getTableProps()}>
           <thead>
-            {headerGroups.map((headerGroup,i) => (
-              <tr key={i} {...headerGroup.getHeaderGroupProps()}>
-                {headerGroup.headers.map((column) => (
-                  <th key={i} {...column.getHeaderProps()}>
+            {headerGroups.map((headerGroup,k) => (
+              <tr key={k} {...headerGroup.getHeaderGroupProps()}>
+                {headerGroup.headers.map((column,h) => (
+                  <th key={h} {...column.getHeaderProps()}>
                     {column.render("Header")}
                   </th>
                 ))}
@@ -55,9 +57,9 @@ const BodyTable = ({
               prepareRow(row);
               return (
                 <tr key={i} {...row.getRowProps()}>
-                  {row.cells.map((cell) => {
+                  {row.cells.map((cell,j) => {
                     return (
-                      <td key={i} {...cell.getCellProps()}>{cell.render("Cell")}</td>
+                      <td key={j}  {...cell.getCellProps()}>{cell.render("Cell")}</td>
                     );
                   })}
                 </tr>
@@ -68,7 +70,7 @@ const BodyTable = ({
       ) : (
         <h1 className="text-center">No hay planificaciones creadas</h1>
       )}
-      {rows.length > 0 && pageCount >1? (
+      {rows.length > 0 ?(
         <nav aria-label="Page navigation example">
           <ul className="pagination justify-content-center">
             <li className="page-item">

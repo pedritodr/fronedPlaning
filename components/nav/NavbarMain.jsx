@@ -25,7 +25,7 @@ const NavbarMain = () => {
       setUser(response.data.user);
     }
   })()
-  }, [auth,logout]);
+  }, [auth]);
 
   return (
     <Navbar style={{ borderBottom: "1px solid !important" }}>
@@ -46,7 +46,6 @@ const NavbarMain = () => {
         </Navbar.Collapse>
       </Container>
     </Navbar>
-
   );
 };
 

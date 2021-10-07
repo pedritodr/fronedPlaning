@@ -1,4 +1,4 @@
-import {  useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/router";
 import * as Yup from "yup";
 import Swal from "sweetalert2";
@@ -25,7 +25,6 @@ const initialValues = () => {
 };
 
 export default function SignupForm() {
-
   const router = useRouter();
   const { login } = useAuth();
   const [loadingUser, setLoadingUser] = useState(false);
@@ -47,15 +46,15 @@ export default function SignupForm() {
         );
         if (resultPetition.status === 200) {
           Swal.fire({
-            position: 'top-end',
-            icon: 'success',
-            title: 'Correcto',
+            position: "top-end",
+            icon: "success",
+            title: "Correcto",
             showConfirmButton: false,
-            timer: 1500
-          })
+            timer: 1500,
+          });
           login(resultPetition.data.token);
           setTimeout(() => {
-           router.push("/list-planing");
+            router.push("/list-planing");
           }, 1500);
         }
         setLoadingUser(false);
@@ -69,8 +68,6 @@ export default function SignupForm() {
       }
     },
   });
-
-
 
   return (
     <>
