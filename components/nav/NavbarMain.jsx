@@ -13,7 +13,7 @@ const NavbarMain = () => {
     const tokenValid = validToken(logout);
     if(tokenValid){
       const response = await axios.get(
-        `http://localhost:8080/api/users/${auth.idUser}`,
+        `${process.env.NEXT_PUBLIC_END_POINT}users/${auth.idUser}`,
         {
           headers: {
             "Content-Type": "application/json; charset=utf-8",
